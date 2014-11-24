@@ -1,0 +1,5 @@
+aria2-opt (1.18.6-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- alan <mrzhaili@gmail.com>  Mon, 24 Nov 2014 21:55:04 +0800

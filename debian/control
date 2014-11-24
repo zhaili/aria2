@@ -1,0 +1,16 @@
+Source: aria2-opt
+Section: unknown
+Priority: extra
+Maintainer: alan <mrzhaili@gmail.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.3
+Homepage: https://github.com/tatsuhiro-t/aria2
+#Vcs-Git: git://git.debian.org/collab-maint/aria2-opt.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/aria2-opt.git;a=summary
+
+Package: aria2-opt
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: aria2 - The ultra fast download utility
+  aria2 is a lightweight multi-protocol & multi-source, cross platform download utility operated in command-line. It supports HTTP/HTTPS, FTP, BitTorrent and Metalink. 
+http://aria2.sourceforge.net/
