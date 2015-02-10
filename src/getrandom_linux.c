@@ -2,7 +2,7 @@
 /*
  * aria2 - The high speed download utility
  *
- * Copyright (C) 2013 Tatsuhiro Tsujikawa
+ * Copyright (C) 2014 Nils Maier
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,42 +32,19 @@
  * files in the program, then also delete it here.
  */
 /* copyright --> */
-#ifndef LIBSSL_TLS_SESSION_H
-#define LIBSSL_TLS_SESSION_H
 
-#include "common.h"
+#define _GNUSOURCE
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <linux/random.h>
 
-#include <openssl/ssl.h>
+#include "config.h"
+#include "getrandom_linux.h"
 
-#include "LibsslTLSContext.h"
-#include "TLSSession.h"
-#include "a2netcompat.h"
-
-namespace aria2 {
-
-class OpenSSLTLSSession : public TLSSession {
-public:
-  OpenSSLTLSSession(OpenSSLTLSContext* tlsContext);
-  virtual ~OpenSSLTLSSession();
-  virtual int init(sock_t sockfd) CXX11_OVERRIDE;
-  virtual int setSNIHostname(const std::string& hostname) CXX11_OVERRIDE;
-  virtual int closeConnection() CXX11_OVERRIDE;
-  virtual int checkDirection() CXX11_OVERRIDE;
-  virtual ssize_t writeData(const void* data, size_t len) CXX11_OVERRIDE;
-  virtual ssize_t readData(void* data, size_t len) CXX11_OVERRIDE;
-  virtual int tlsConnect
-  (const std::string& hostname, TLSVersion& version, std::string& handshakeErr)
-  CXX11_OVERRIDE;
-  virtual int tlsAccept(TLSVersion& version) CXX11_OVERRIDE;
-  virtual std::string getLastErrorString() CXX11_OVERRIDE;
-private:
-  int handshake(TLSVersion& version);
-  SSL* ssl_;
-  OpenSSLTLSContext* tlsContext_;
-  // Last error code from openSSL library functions
-  int rv_;
-};
-
-} // namespace aria2
-
-#endif // LIBSSL_TLS_SESSION_H
+int getrandom_linux(void *buf, size_t buflen) {
+#ifdef HAVE_GETRANDOM
+  return getrandom(buf, buflen, 0);
+#else // HAVE_GETRANDOM
+  return syscall(SYS_getrandom, buf, buflen, 0);
+#endif // HAVE_GETRANDOM
+}

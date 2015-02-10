@@ -2,7 +2,7 @@
 /*
  * aria2 - The high speed download utility
  *
- * Copyright (C) 2013 Tatsuhiro Tsujikawa
+ * Copyright (C) 2014 Tatsuhiro Tsujikawa
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,42 +32,45 @@
  * files in the program, then also delete it here.
  */
 /* copyright --> */
-#ifndef LIBSSL_TLS_SESSION_H
-#define LIBSSL_TLS_SESSION_H
+#include "Adler32MessageDigestImpl.h"
 
-#include "common.h"
+#include <cstring>
 
-#include <openssl/ssl.h>
+#include <zlib.h>
 
-#include "LibsslTLSContext.h"
-#include "TLSSession.h"
 #include "a2netcompat.h"
 
 namespace aria2 {
 
-class OpenSSLTLSSession : public TLSSession {
-public:
-  OpenSSLTLSSession(OpenSSLTLSContext* tlsContext);
-  virtual ~OpenSSLTLSSession();
-  virtual int init(sock_t sockfd) CXX11_OVERRIDE;
-  virtual int setSNIHostname(const std::string& hostname) CXX11_OVERRIDE;
-  virtual int closeConnection() CXX11_OVERRIDE;
-  virtual int checkDirection() CXX11_OVERRIDE;
-  virtual ssize_t writeData(const void* data, size_t len) CXX11_OVERRIDE;
-  virtual ssize_t readData(void* data, size_t len) CXX11_OVERRIDE;
-  virtual int tlsConnect
-  (const std::string& hostname, TLSVersion& version, std::string& handshakeErr)
-  CXX11_OVERRIDE;
-  virtual int tlsAccept(TLSVersion& version) CXX11_OVERRIDE;
-  virtual std::string getLastErrorString() CXX11_OVERRIDE;
-private:
-  int handshake(TLSVersion& version);
-  SSL* ssl_;
-  OpenSSLTLSContext* tlsContext_;
-  // Last error code from openSSL library functions
-  int rv_;
-};
+Adler32MessageDigestImpl::Adler32MessageDigestImpl()
+  : adler_(adler32(0, Z_NULL, 0))
+{}
+
+size_t Adler32MessageDigestImpl::getDigestLength() const
+{
+  return length();
+}
+
+void Adler32MessageDigestImpl::reset()
+{
+  adler_ = adler32(0, Z_NULL, 0);
+}
+
+void Adler32MessageDigestImpl::update(const void* data, size_t length)
+{
+  adler_ = adler32(adler_, reinterpret_cast<const unsigned char*>(data),
+                   length);
+}
+
+void Adler32MessageDigestImpl::digest(unsigned char* md)
+{
+  auto adler = htonl(adler_);
+  memcpy(md, &adler, getDigestLength());
+}
+
+size_t Adler32MessageDigestImpl::length()
+{
+  return 4;
+}
 
 } // namespace aria2
-
-#endif // LIBSSL_TLS_SESSION_H

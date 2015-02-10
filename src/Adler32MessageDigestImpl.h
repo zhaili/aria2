@@ -2,7 +2,7 @@
 /*
  * aria2 - The high speed download utility
  *
- * Copyright (C) 2013 Tatsuhiro Tsujikawa
+ * Copyright (C) 2014 Tatsuhiro Tsujikawa
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,42 +32,36 @@
  * files in the program, then also delete it here.
  */
 /* copyright --> */
-#ifndef LIBSSL_TLS_SESSION_H
-#define LIBSSL_TLS_SESSION_H
+#ifndef D_ADLER32_MESSAGE_DIGEST_H
+#define D_ADLER32_MESSAGE_DIGEST_H
 
-#include "common.h"
-
-#include <openssl/ssl.h>
-
-#include "LibsslTLSContext.h"
-#include "TLSSession.h"
-#include "a2netcompat.h"
+#include "MessageDigestImpl.h"
 
 namespace aria2 {
 
-class OpenSSLTLSSession : public TLSSession {
+#ifdef HAVE_ZLIB
+
+#define ADLER32_MESSAGE_DIGEST                          \
+  { "adler32", make_hi<Adler32MessageDigestImpl>() },
+
+class Adler32MessageDigestImpl : public MessageDigestImpl {
 public:
-  OpenSSLTLSSession(OpenSSLTLSContext* tlsContext);
-  virtual ~OpenSSLTLSSession();
-  virtual int init(sock_t sockfd) CXX11_OVERRIDE;
-  virtual int setSNIHostname(const std::string& hostname) CXX11_OVERRIDE;
-  virtual int closeConnection() CXX11_OVERRIDE;
-  virtual int checkDirection() CXX11_OVERRIDE;
-  virtual ssize_t writeData(const void* data, size_t len) CXX11_OVERRIDE;
-  virtual ssize_t readData(void* data, size_t len) CXX11_OVERRIDE;
-  virtual int tlsConnect
-  (const std::string& hostname, TLSVersion& version, std::string& handshakeErr)
-  CXX11_OVERRIDE;
-  virtual int tlsAccept(TLSVersion& version) CXX11_OVERRIDE;
-  virtual std::string getLastErrorString() CXX11_OVERRIDE;
+  Adler32MessageDigestImpl();
+  virtual size_t getDigestLength() const CXX11_OVERRIDE;
+  virtual void reset() CXX11_OVERRIDE;
+  virtual void update(const void* data, size_t length) CXX11_OVERRIDE;
+  virtual void digest(unsigned char* md) CXX11_OVERRIDE;
+  static size_t length();
 private:
-  int handshake(TLSVersion& version);
-  SSL* ssl_;
-  OpenSSLTLSContext* tlsContext_;
-  // Last error code from openSSL library functions
-  int rv_;
+  unsigned long adler_;
 };
+
+#else // !HAVE_ZLIB
+
+#define ADLER32_MESSAGE_DIGEST
+
+#endif // !HAVE_ZLIB
 
 } // namespace aria2
 
-#endif // LIBSSL_TLS_SESSION_H
+#endif // D_ADLER32_MESSAGE_DIGEST_H
