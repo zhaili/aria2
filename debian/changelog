@@ -1,3 +1,9 @@
+aria2-opt (1.18.10-1) unstable; urgency=low
+
+  * Make Debian release 1.18.10-1
+
+ -- alan <mrzhaili@gmail.com>  Fri, 27 Feb 2015 19:54:36 +0800
+
 aria2-opt (1.18.9-1) unstable; urgency=low
 
   * Make Debian release 1.18.9-1
